@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProductController;
 
 /*
@@ -15,15 +15,23 @@ use App\Http\Controllers\ProductController;
 |
 */
 
+// Auth routes
+Route::post('login', [AuthController::class, 'login'])->name('login');
+Route::post('register', [AuthController::class, 'register'])->name('register');
+
 // Public routes - no authentication required
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
-Route::get('/products/search/{query}', [ProductController::class, 'search'])->name('products.search');
 
 // Protected routes - authentication required
 Route::group(['middleware' => ['auth:sanctum']], function () {
-    // Product routes
-    Route::post('/products', [ProductController::class, 'store'])->name('products.store');
-    Route::put('/products/{product}', [ProductController::class, 'update'])->name('products.update');
-    Route::delete('/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+    Route::post('logout', [AuthController::class, 'logout'])->name('logout');
+
+    Route::group(['prefix' => 'products', 'as' => 'products.'], function () {
+        // Product routes
+        Route::get('/search/{query}', [ProductController::class, 'search'])->name('search');
+        Route::post('', [ProductController::class, 'store'])->name('store');
+        Route::put('/{product}', [ProductController::class, 'update'])->name('update');
+        Route::delete('/{product}', [ProductController::class, 'destroy'])->name('destroy');
+    });
 });
